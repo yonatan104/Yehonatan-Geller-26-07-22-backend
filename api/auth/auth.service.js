@@ -7,30 +7,31 @@ const logger = require('../../services/logger.service')
 
 const cryptr = new Cryptr(process.env.CRYPTER_KEY)
 
-async function login(name, password) {
-  logger.debug(`auth.service - login with name: ${name}`)
+async function login(username, password) {
+  logger.debug(`auth.service - login with username: ${username}`)
 
-  const user = await userService.getByUser(name)
-  if (!user) return Promise.reject('Invalid name or password')
+  const user = await userService.getByUser(username)
+  if (!user) return Promise.reject('Invalid username or password')
   // TODO: un-comment for real login
   const match = await bcrypt.compare(password, user.password)
-  if (!match) return Promise.reject('Invalid name or password')
+  if (!match) return Promise.reject('Invalid username or password')
 
   delete user.password
   return user
 }
 
-async function signup({ name, password, imgUrl }) {
+async function signup({ username, password, imgUrl, fullName }) {
+  console.log("🚀 ~ file: auth.service.js ~ line 24 ~ signup ~ username", username, password, imgUrl, fullName)
   const saltRounds = 10
 
   logger.debug(
-    `auth.service - signup with name: ${name}`
+    `auth.service - signup with username: ${username}`
   )
-  if (!name || !password)
-    return Promise.reject('Name,  password and  imgUrl are required!')
+  if (!username || !password || !fullName)
+    return Promise.reject('username,  password, fullName and  imgUrl are required!')
 
   const hash = await bcrypt.hash(password, saltRounds)
-  return userService.add({ name, password: hash, imgUrl })
+  return userService.add({ username, password: hash, imgUrl, fullName })
 }
 
 function getLoginToken(user) {

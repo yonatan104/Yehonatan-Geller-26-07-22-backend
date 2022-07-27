@@ -41,13 +41,13 @@ async function getById(userId) {
         throw err
     }
 }
-async function getByUser(name) {
+async function getByUser(username) {
     try {
         const collection = await dbService.getCollection('user')
-        const user = await collection.findOne({ name })
+        const user = await collection.findOne({ username })
         return user
     } catch (err) {
-        logger.error(`while finding user ${name}`, err)
+        logger.error(`while finding user ${username}`, err)
         throw err
     }
 }
@@ -82,9 +82,10 @@ async function update(user) {
 async function add(user) {
     try {
         const userToAdd = {
-            name: user.name,
+            username: user.username,
             password: user.password,
-            imgUrl: user.imgUrl
+            imgUrl: user.imgUrl,
+            fullName: user.fullName
         }
         const collection = await dbService.getCollection('user')
         await collection.insertOne(userToAdd)
