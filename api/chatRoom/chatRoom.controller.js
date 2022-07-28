@@ -2,6 +2,7 @@ const chatRoomService = require('./chatRoom.service')
 const logger = require('../../services/logger.service')
 
 async function getChatRoom(req, res) {
+  
   try {
     const chatRoom = await chatRoomService.getById(req.params.id)
     res.send(chatRoom)

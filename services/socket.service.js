@@ -20,14 +20,14 @@ function setupSocketAPI(http) {
                 emitToUser({ type: 'new-message', data: chatRoom, userId})
             })
         })
-        socket.on('call-request', callRequest => {
-            emitToUser({ type: 'incoming-call-Request', data: callRequest, userId: callRequest.toUserId })
+        socket.on('add-friend',user=>{
+            if(!user || !user._id) return
+            const userId = user._id
+            console.log("🚀 ~ file: socket.service.js ~ line 24 ~ setupSocketAPI ~ user", user)
+            
+            emitToUser({ type: 'someone-added-me', data: user, userId})
         })
         
-        socket.on('disconnect-peer-call', toUserId =>{
-            console.log('disconnect-peer-call', toUserId);
-            emitToUser({ type: 'got-disconnect-peer-call', data: toUserId, userId: toUserId.toUserId })
-        })
 
 
         socket.on('set-user-socket', userId => {

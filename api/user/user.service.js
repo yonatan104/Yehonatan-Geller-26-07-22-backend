@@ -67,9 +67,9 @@ async function update(user) {
         // peek only updatable properties
         const userToSave = {
             _id: ObjectId(user._id), // needed for the returnd obj
-            chatRoomsIds: user.chatRoomsIds,           
+            // chatRoomsIds: user.chatRoomsIds, 
+            friends: user.friends          
         }
-        console.log('userToSave', userToSave);
         const collection = await dbService.getCollection('user')
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
         return userToSave
@@ -85,7 +85,8 @@ async function add(user) {
             username: user.username,
             password: user.password,
             imgUrl: user.imgUrl,
-            fullName: user.fullName
+            fullName: user.fullName,
+            friends:[],
         }
         const collection = await dbService.getCollection('user')
         await collection.insertOne(userToAdd)
