@@ -20,7 +20,6 @@ async function login(req, res) {
 async function signup(req, res) {
     try {
         const credentials = req.body
-        console.log("🚀 ~ file: auth.controller.js ~ line 23 ~ signup ~ credentials", credentials)
         // Never log passwords
         const account = await authService.signup(credentials)
         logger.debug(`auth.route - new account created: ` + JSON.stringify(account))

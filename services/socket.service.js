@@ -23,7 +23,6 @@ function setupSocketAPI(http) {
         socket.on('add-friend',user=>{
             if(!user || !user._id) return
             const userId = user._id
-            console.log("🚀 ~ file: socket.service.js ~ line 24 ~ setupSocketAPI ~ user", user)
             
             emitToUser({ type: 'someone-added-me', data: user, userId})
         })

@@ -11,7 +11,6 @@ module.exports = {
 
 
 async function getById(chatRoomId) {
-    console.log('hihi');
     try {
         const collection = await dbService.getCollection('chatRoom')
         const chatRoom = await collection.findOne({ _id: ObjectId(chatRoomId) })
