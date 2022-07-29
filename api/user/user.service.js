@@ -7,7 +7,6 @@ module.exports = {
     query,
     getById,
     getByUser,
-    remove,
     update,
     add
 }
@@ -15,7 +14,7 @@ module.exports = {
 async function query(filterBy = {}) {
     try {
         const collection = await dbService.getCollection('user')
-        var users = await collection.find({ _id: { $nin: [ObjectId(filterBy.logedInUserId)]}}).toArray()
+        var users = await collection.find({ _id: { $nin: [ObjectId(filterBy.loggedInUserId)]}}).toArray()
         users = users.map(user => {
             delete user.password
             user.createdAt = ObjectId(user._id).getTimestamp()
@@ -52,15 +51,7 @@ async function getByUser(username) {
     }
 }
 
-async function remove(userId) {
-    try {
-        const collection = await dbService.getCollection('user')
-        await collection.deleteOne({ '_id': ObjectId(userId) })
-    } catch (err) {
-        logger.error(`cannot remove user ${userId}`, err)
-        throw err
-    }
-}
+
 
 async function update(user) {
     try {
