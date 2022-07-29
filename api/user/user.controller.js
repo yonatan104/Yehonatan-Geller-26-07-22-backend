@@ -15,7 +15,7 @@ async function getUser(req, res) {
 async function getUsers(req, res) {
   try {
     const filterBy = {
-      logedInUserId: req.query?.logedInUserId || '',
+      loggedInUserId: req.query?.loggedInUserId || '',
     }
     const users = await userService.query(filterBy)
     res.send(users)
