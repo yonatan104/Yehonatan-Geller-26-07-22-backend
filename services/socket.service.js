@@ -15,9 +15,9 @@ function setupSocketAPI(http) {
         })
         socket.on('send-message', chatRoom => {     
             if(!chatRoom) return       
-            if (!chatRoom.usersIds) return       
-            chatRoom.usersIds.forEach(userId => {
-                emitToUser({ type: 'new-message', data: chatRoom, userId})
+            if (!chatRoom.miniUsers) return       
+            chatRoom.miniUsers.forEach(miniUser => {
+                emitToUser({ type: 'new-message', data: chatRoom, userId:miniUser._id})
             })
         })
         socket.on('add-friend',user=>{

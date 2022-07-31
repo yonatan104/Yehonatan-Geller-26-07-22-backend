@@ -6,7 +6,24 @@ const ObjectId = require('mongodb').ObjectId
 module.exports = {
     getById,
     update,
-    add
+    add,
+    remove,
+    query
+}
+async function query() {
+    try {
+        const collection = await dbService.getCollection('chatRoom')
+        var chatRooms = await collection.find({}).toArray()
+        chatRooms = chatRooms.map(chatRoom => {
+            delete chatRoom.messages
+            //never return private messages to admin
+            return chatRoom
+        })
+        return chatRooms
+    } catch (err) {
+        logger.error('cannot find chatRooms', err)
+        throw err
+    }
 }
 
 
@@ -41,7 +58,7 @@ async function update(chatRoom) {
 async function add(chatRoom) {
     try {
         const chatRoomToAdd = {
-            usersIds: chatRoom.usersIds,
+            miniUsers: chatRoom.miniUsers,
             messages: chatRoom.messages,
         }
         const collection = await dbService.getCollection('chatRoom')
@@ -52,6 +69,18 @@ async function add(chatRoom) {
         throw err
     }
 }
+
+async function remove(chatRoomId) {
+    try {
+        const collection = await dbService.getCollection('chatRoom')
+        const deletedCount = await collection.deleteOne({ _id: ObjectId(chatRoomId) })
+        return deletedCount
+    } catch (err) {
+        console.log(`ERROR: cannot delete chat room)`)
+        throw err
+    }
+}
+
 
 
 

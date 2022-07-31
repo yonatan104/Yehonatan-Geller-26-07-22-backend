@@ -1,20 +1,23 @@
 
+const { getStore } = require('../../services/als.service')
 const dbService = require('../../services/db.service')
 const logger = require('../../services/logger.service')
 const ObjectId = require('mongodb').ObjectId
 const authService = require('../auth/auth.service')
+const chatRoomService = require('../chatRoom/chatRoom.service')
 module.exports = {
     query,
     getById,
     getByUser,
     update,
-    add
+    add,
+    remove
 }
 
 async function query(filterBy = {}) {
     try {
         const collection = await dbService.getCollection('user')
-        var users = await collection.find({ _id: { $nin: [ObjectId(filterBy.loggedInUserId)]}}).toArray()
+        var users = await collection.find({ _id: { $nin: [ObjectId(filterBy.loggedInUserId)] } }).toArray()
         users = users.map(user => {
             delete user.password
             user.createdAt = ObjectId(user._id).getTimestamp()
@@ -58,7 +61,7 @@ async function update(user) {
         // peek only updatable properties
         const userToSave = {
             _id: ObjectId(user._id), // needed for the returnd obj
-            friends: user.friends          
+            friends: user.friends
         }
         const collection = await dbService.getCollection('user')
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
@@ -76,7 +79,7 @@ async function add(user) {
             password: user.password,
             imgUrl: user.imgUrl,
             fullName: user.fullName,
-            friends:[],
+            friends: [],
         }
         const collection = await dbService.getCollection('user')
         await collection.insertOne(userToAdd)
@@ -84,6 +87,42 @@ async function add(user) {
     } catch (err) {
         logger.error('cannot insert user', user)
         throw err
+    }
+}
+async function remove(userId) {
+    try {
+        const userToRemove = await getById(userId)
+        if (userToRemove?.isAdmin) return res.status(401).send('Not Authenticated admin can not remove')
+        if (userToRemove.friends.length > 0) removeUserFromUsersFriendList(userToRemove)
+
+        const collection = await dbService.getCollection('user')
+        const deletedCount = await collection.deleteOne({ _id: ObjectId(userId) })
+        return deletedCount
+    } catch (err) {
+        console.log(`ERROR: cannot delete user (user.service - remove)`)
+        throw err
+    }
+}
+
+async function removeUserFromUsersFriendList(userToRemove) {
+    try {
+        userToRemove.friends.forEach(friend => {
+            chatRoomService.remove(friend.sharedChatRoomId)
+        })
+        const { loggedInUser } = alsService.getStore()
+        const users = await query({ loggedInUserId: loggedInUser._id })
+        console.log("🚀 ~ file: user.service.js ~ line 114 ~ removeUserFromUsersFriendList ~ users", users)
+        users.forEach(user => {
+            const friendsToUpdate = user.friends.filter(friend => friend._id !== userToRemove._id)
+            if (friendsToUpdate.length > user.friends) {
+                const userToUpdate = { ...user }
+                userToUpdate.friends = { ...friendsToUpdate }
+                update(userToUpdate)
+            }
+        });
+
+    } catch (error) {
+        console.error('can not update other documents ')
     }
 }
 

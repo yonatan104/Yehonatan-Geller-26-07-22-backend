@@ -37,9 +37,22 @@ async function updateUser(req, res) {
     res.status(500).send({ err: 'Failed to update user' })
   }
 }
+async function removeUser(req, res) {
+  try {
+    const { id } = req.params
+    const deletedCount = await userService.remove(id)
+    if (!deletedCount) return res.status(401).send('Failed to remove user')
+    res.send('user removed successfully')
+  } catch (err) {
+    // logger.error('Failed to remove user', err)
+    res.status(500).send({ err: 'Failed to remove user ' })
+  }
+}
+
 
 module.exports = {
   getUser,
   getUsers,
   updateUser,
+  removeUser,
 }

@@ -33,6 +33,9 @@ const userRoutes = require('./api/user/user.routes')
 const chatRoomRoutes = require('./api/chatRoom/chatRoom.routes')
 const { setupSocketAPI } = require('./services/socket.service')
 
+const setupAsyncLocalStorage = require('./middlewares/setup.als.middleware')
+app.all('*', setupAsyncLocalStorage)
+
 
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)

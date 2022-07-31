@@ -1,6 +1,15 @@
 const chatRoomService = require('./chatRoom.service')
 const logger = require('../../services/logger.service')
 
+async function getChatRooms(req,res){
+  try {
+    const chatRooms = await chatRoomService.query()
+    res.send(chatRooms)
+  } catch (error) {
+    logger.error('Failed to get chatRooms', err)
+    res.status(500).send({ err: 'Failed to get ChatRooms' })
+  }
+}
 async function getChatRoom(req, res) {
   
   try {
@@ -41,5 +50,6 @@ async function updateChatRoom(req, res) {
 module.exports = {
   getChatRoom,
   addChatRoom,
-  updateChatRoom
+  updateChatRoom,
+  getChatRooms
 }
