@@ -40,7 +40,6 @@ async function getById(chatRoomId) {
 
 
 async function update(chatRoom) {
-    console.log("🚀 ~ file: chatRoom.service.js ~ line 43 ~ update ~ chatRoom", chatRoom)
     try {
         // peek only updatable properties
         const chatRoomToSave = {
