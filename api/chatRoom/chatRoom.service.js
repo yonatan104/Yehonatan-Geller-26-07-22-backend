@@ -40,11 +40,13 @@ async function getById(chatRoomId) {
 
 
 async function update(chatRoom) {
+    console.log("🚀 ~ file: chatRoom.service.js ~ line 43 ~ update ~ chatRoom", chatRoom)
     try {
         // peek only updatable properties
         const chatRoomToSave = {
             _id: ObjectId(chatRoom._id), // needed for the returnd obj
-            messages: chatRoom.messages,           
+            messages: chatRoom.messages,     
+            miniUsers: chatRoom.miniUsers
         }
         const collection = await dbService.getCollection('chatRoom')
         await collection.updateOne({ _id: chatRoomToSave._id }, { $set: chatRoomToSave })

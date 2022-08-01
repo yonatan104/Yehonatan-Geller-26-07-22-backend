@@ -1,7 +1,7 @@
 
 const dbService = require('../../services/db.service')
 const logger = require('../../services/logger.service')
-const alsService= require('../../services/als.service')
+const alsService = require('../../services/als.service')
 const ObjectId = require('mongodb').ObjectId
 const chatRoomService = require('../chatRoom/chatRoom.service')
 module.exports = {
@@ -10,7 +10,8 @@ module.exports = {
     getByUser,
     update,
     add,
-    remove
+    remove,
+    updateUserAll
 }
 
 async function query(filterBy = {}) {
@@ -70,6 +71,26 @@ async function update(user) {
         throw err
     }
 }
+async function updateUserAll(user) {
+    try {
+        // peek only updatable properties
+        const userToSave = {
+            _id: ObjectId(user._id), // needed for the returnd obj
+            friends: user.friends,
+            username: user.username,
+            fullName: user.fullName,
+            imgUrl: user.imgUrl,
+            chatRoomsIds: user.chatRoomsIds,
+        }
+        const collection = await dbService.getCollection('user')
+        await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
+        updateUserInAllData(user)
+        return user
+    } catch (err) {
+        logger.error(`cannot update user ${user._id}`, err)
+        throw err
+    }
+}
 
 async function add(user) {
     try {
@@ -92,7 +113,7 @@ async function remove(userId) {
     try {
         const userToRemove = await getById(userId)
         if (userToRemove?.isAdmin) return res.status(401).send('Not Authenticated admin can not remove')
-        await  removeUserFromUsersFriendList(userToRemove)
+        await removeUserFromUsersFriendList(userToRemove)
 
         const collection = await dbService.getCollection('user')
         const deletedCount = await collection.deleteOne({ _id: ObjectId(userId) })
@@ -110,15 +131,53 @@ async function removeUserFromUsersFriendList(userToRemove) {
         })
         const { loggedInUser } = alsService.getStore()
         const users = await query({ loggedInUserId: loggedInUser._id })
-        users.forEach(async(user) => {
+        users.forEach(async (user) => {
             const friendsToUpdate = user.friends.filter(friend => friend._id !== userToRemove._id.toString())
-                const userToUpdate = { ...user }
-                userToUpdate.friends = [ ...friendsToUpdate ]
-                await update(userToUpdate)
+            const userToUpdate = { ...user }
+            userToUpdate.friends = [...friendsToUpdate]
+            await update(userToUpdate)
         });
 
     } catch (error) {
         console.error('can not update other documents ')
+    }
+}
+async function updateUserInAllData(userToUpdate) {
+    console.log("🚀 ~ file: user.service.js ~ line 146 ~ updateUserInAllData ~ userToUpdate", userToUpdate)
+    try {
+        userToUpdate.friends.forEach(async (friend) => {
+            const chatRoom = await chatRoomService.getById(friend.sharedChatRoomId)
+            const updateMiniUsers = chatRoom.miniUsers.map((miniUser) => {
+            console.log("🚀 ~ file: user.service.js ~ line 151 ~ updateMiniUsers ~ miniUser", miniUser)
+                if (miniUser._id === userToUpdate._id) {
+                    miniUser.username = userToUpdate.username
+                    miniUser.fullName = userToUpdate.fullName
+                    if (userToUpdate.imgUrl.length>0) miniUser.imgUrl = userToUpdate.imgUrl
+                    console.log("🚀 ~ file: user.service.js ~ line 158 ~ updateMiniUsers ~ miniUser", miniUser)
+                }
+                return miniUser
+            })
+            chatRoom.miniUsers = [...updateMiniUsers]
+            const updatedChatRoom = await chatRoomService.update(chatRoom)
+        })
+        
+        const { loggedInUser } = alsService.getStore()
+        const users = await query({ loggedInUserId: loggedInUser._id })
+        users.forEach(async (user) => {
+            const friendsToUpdate = user.friends.map(friend => {
+                if (friend._id === userToUpdate._id) {
+                    friend.username = userToUpdate.username
+                    friend.imgUrl = userToUpdate.imgUrl
+                }
+                return friend
+            })
+            const userToUpdateBefore = { ...user }
+            userToUpdateBefore.friends = [...friendsToUpdate]
+            await update(userToUpdateBefore)
+        });
+
+    } catch (error) {
+        console.error('can not update other updateUserInAllData ')
     }
 }
 

@@ -37,6 +37,16 @@ async function updateUser(req, res) {
     res.status(500).send({ err: 'Failed to update user' })
   }
 }
+async function updateUserAll(req, res) {
+  try {
+    const user = req.body
+    const savedUser = await userService.updateUserAll(user)
+    res.send(savedUser)
+  } catch (err) {
+    logger.error('Failed to update all user', err)
+    res.status(500).send({ err: 'Failed to update user' })
+  }
+}
 async function removeUser(req, res) {
   try {
     const { id } = req.params
@@ -55,4 +65,5 @@ module.exports = {
   getUsers,
   updateUser,
   removeUser,
+  updateUserAll,
 }
