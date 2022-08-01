@@ -1,6 +1,6 @@
 const userService = require('./user.service')
 const logger = require('../../services/logger.service')
-
+const bcrypt = require('bcrypt')
 
 async function getUser(req, res) {
   try {
@@ -37,6 +37,21 @@ async function updateUser(req, res) {
     res.status(500).send({ err: 'Failed to update user' })
   }
 }
+async function addUser(req, res) {
+  try {
+    const saltRounds = 10
+    const user = req.body
+    const { fullName, username, password, imgUrl  } = user
+    
+    
+    const hash = await bcrypt.hash(password, saltRounds)
+    const savedUser = await userService.add({ username, password: hash, imgUrl, fullName })
+    res.send(savedUser)
+  } catch (err) {
+    logger.error('Failed to add user', err)
+    res.status(500).send({ err: 'Failed to add user' })
+  }
+}
 async function updateUserAll(req, res) {
   try {
     const user = req.body
@@ -66,4 +81,5 @@ module.exports = {
   updateUser,
   removeUser,
   updateUserAll,
+  addUser,
 }

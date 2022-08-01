@@ -143,17 +143,14 @@ async function removeUserFromUsersFriendList(userToRemove) {
     }
 }
 async function updateUserInAllData(userToUpdate) {
-    console.log("🚀 ~ file: user.service.js ~ line 146 ~ updateUserInAllData ~ userToUpdate", userToUpdate)
     try {
         userToUpdate.friends.forEach(async (friend) => {
             const chatRoom = await chatRoomService.getById(friend.sharedChatRoomId)
             const updateMiniUsers = chatRoom.miniUsers.map((miniUser) => {
-            console.log("🚀 ~ file: user.service.js ~ line 151 ~ updateMiniUsers ~ miniUser", miniUser)
                 if (miniUser._id === userToUpdate._id) {
                     miniUser.username = userToUpdate.username
                     miniUser.fullName = userToUpdate.fullName
                     if (userToUpdate.imgUrl.length>0) miniUser.imgUrl = userToUpdate.imgUrl
-                    console.log("🚀 ~ file: user.service.js ~ line 158 ~ updateMiniUsers ~ miniUser", miniUser)
                 }
                 return miniUser
             })
