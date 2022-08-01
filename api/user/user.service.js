@@ -1,9 +1,8 @@
 
-const { getStore } = require('../../services/als.service')
 const dbService = require('../../services/db.service')
 const logger = require('../../services/logger.service')
+const alsService= require('../../services/als.service')
 const ObjectId = require('mongodb').ObjectId
-const authService = require('../auth/auth.service')
 const chatRoomService = require('../chatRoom/chatRoom.service')
 module.exports = {
     query,
@@ -93,7 +92,7 @@ async function remove(userId) {
     try {
         const userToRemove = await getById(userId)
         if (userToRemove?.isAdmin) return res.status(401).send('Not Authenticated admin can not remove')
-        if (userToRemove.friends.length > 0) removeUserFromUsersFriendList(userToRemove)
+        await  removeUserFromUsersFriendList(userToRemove)
 
         const collection = await dbService.getCollection('user')
         const deletedCount = await collection.deleteOne({ _id: ObjectId(userId) })
@@ -111,14 +110,11 @@ async function removeUserFromUsersFriendList(userToRemove) {
         })
         const { loggedInUser } = alsService.getStore()
         const users = await query({ loggedInUserId: loggedInUser._id })
-        console.log("🚀 ~ file: user.service.js ~ line 114 ~ removeUserFromUsersFriendList ~ users", users)
-        users.forEach(user => {
-            const friendsToUpdate = user.friends.filter(friend => friend._id !== userToRemove._id)
-            if (friendsToUpdate.length > user.friends) {
+        users.forEach(async(user) => {
+            const friendsToUpdate = user.friends.filter(friend => friend._id !== userToRemove._id.toString())
                 const userToUpdate = { ...user }
-                userToUpdate.friends = { ...friendsToUpdate }
-                update(userToUpdate)
-            }
+                userToUpdate.friends = [ ...friendsToUpdate ]
+                await update(userToUpdate)
         });
 
     } catch (error) {

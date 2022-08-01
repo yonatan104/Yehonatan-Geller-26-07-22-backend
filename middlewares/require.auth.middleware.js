@@ -13,8 +13,6 @@ async function requireAuth(req, res, next) {
 
 async function requireAdmin(req, res, next) {
     const { loggedInUser } = alsService.getStore()    
-    console.log("🚀 ~ file: require.auth.middleware.js ~ line 16 ~ requireAdmin ~ alsService.getStore() ", alsService.getStore() )
-    console.log("🚀 ~ file: require.auth.middleware.js ~ line 16 ~ requireAdmin ~ loggedInUser", loggedInUser)
     if (!loggedInUser) return res.status(401).send('Not Authenticated')
 
     if (!loggedInUser.isAdmin) {
